@@ -1,13 +1,17 @@
 defmodule ExAil.Client do
   use HTTPoison.Base
 
-  @endpoint ExAil.base_url()
+  require Logger
+
+  @endpoint ExAil.base_location()
   @token ExAil.token()
   @version ExAil.version()
+  @protocol ExAil.protocol()
+  @port Integer.to_string(ExAil.port())
 
   @impl true
   def process_request_url(url) do
-    @endpoint <> "/api/" <> @version <> "/" <> url
+    @protocol <> "://" <> @endpoint <> ":" <> @port <> "/api/" <> @version <> "/" <> url
   end
 
   @impl true
@@ -23,11 +27,27 @@ defmodule ExAil.Client do
 
   @impl true
   def process_request_options(options) do
-    [{:ssl, [{:verify, :verify_none}]} | options]
+    case @protocol do
+      "https" ->
+        [{:ssl, [{:verify, :verify_none}]} | options]
+
+      "http" ->
+        options
+
+      _ ->
+        options
+    end
   end
 
   @impl true
   def process_response_body(body) do
-    Jason.decode!(body)
+    # attempting the gracefully decode json body
+    case Jason.decode(body) do
+      {:ok, data} ->
+        data
+
+      {:error, _reason} ->
+        body
+    end
   end
 end
