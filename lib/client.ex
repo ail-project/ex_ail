@@ -27,7 +27,8 @@ defmodule ExAil.Client do
 
   @impl true
   def process_request_options(options) do
-    case @protocol do
+    # case @protocol do
+    case ExAil.protocol() do
       "https" ->
         [{:ssl, [{:verify, :verify_none}]} | options]
 
