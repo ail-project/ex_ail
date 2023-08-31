@@ -22,6 +22,8 @@ defmodule ExAil do
   @type cookiejar :: String.t()
   # proxy can be set to 'onion', 'tor' or 'force_tor'
   @type proxy :: String.t()
+  # [%{"name" =>  "", "value" => ""}]
+  @type cookies :: list()
 
   @spec base_location :: String.t()
   def base_location() do
@@ -115,7 +117,7 @@ defmodule ExAil do
     feed_json_item(data, metadata, source, source_uuid, default_encoding)
   end
 
-  @spec crawl_url(url, har, screenshot, deph_limit, frequency, cookiejar, proxy) ::
+  @spec crawl_url(url, har, screenshot, deph_limit, frequency, cookiejar, cookies, proxy) ::
           {:error, {:client_error, any} | {:http_error, any} | {:server_error, any}} | {:ok, any}
   def crawl_url(
         url,
@@ -124,11 +126,12 @@ defmodule ExAil do
         depth_limit \\ 1,
         frequency \\ "",
         cookiejar \\ "",
+        cookies \\ [],
         proxy \\ "force_tor"
       )
       when is_binary(url) and is_binary(cookiejar) and is_binary(proxy) and is_binary(frequency) and
              is_boolean(screenshot) and is_boolean(har) and
-             (is_integer(depth_limit) and depth_limit > 0) do
+             (is_integer(depth_limit) and depth_limit >= 0) do
     dict = %{
       "url" => url,
       "har" => har,
@@ -191,6 +194,15 @@ defmodule ExAil do
 
         _ ->
           Map.put(dict, "cookiejar", cookiejar)
+      end
+
+    dict =
+      case cookies do
+        [] ->
+          dict
+
+        [_ | _] ->
+          Map.put(dict, "cookies", cookies)
       end
 
     case Client.post("add/crawler/task", Jason.encode!(dict)) do
