@@ -198,6 +198,9 @@ defmodule ExAil do
 
     dict =
       case cookies do
+        %{} ->
+          dict
+
         [] ->
           dict
 
