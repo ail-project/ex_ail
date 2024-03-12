@@ -10,7 +10,7 @@ by adding `ex_ail` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_ail, "~> 0.1.0"}
+    {:ex_ail, git: "https://github.com/ail-project/ex_ail", tag: "0.1.0"}
   ]
 end
 ```
